@@ -5,6 +5,7 @@ OBJS = $(patsubst $(SRC)/%.cpp,$(OBJ)/%.o,$(SRCS))
 DEPS = $(OBJS:.o=.d)
 BIN = bin
 TARGET = $(BIN)/bf
+TEST = tests/run.sh
 
 CPP = g++
 CPP_COMMON = -MMD -std=c++20 -Wall -Wextra -Wshadow -Wunused
@@ -27,6 +28,9 @@ $(OBJ)/%.o: $(SRC)/%.cpp
 
 $(TARGET): $(OBJS)
 	$(CPP) $(OBJS) -o $@ $(LDFLAGS)
+
+test: $(TARGET)
+	$(TEST) $(TARGET)
 
 .PHONY: clean
 clean:
