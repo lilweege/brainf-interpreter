@@ -20,8 +20,8 @@ auto main(int argc, const char** argv) -> int {
 	is.close();
 
 	try {
-		auto program = compile(source);
-		execute(program);
+		auto program = bf::compile(source);
+		bf::execute(program);
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what() << "\n";
