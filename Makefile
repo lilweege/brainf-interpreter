@@ -7,10 +7,10 @@ BIN = bin
 TARGET = $(BIN)/bf
 TEST = tests/run.sh
 
-CPP = g++
-CPP_COMMON = -MMD -std=c++20 -Wall -Wextra -Wshadow -Wunused
+CPP = clang++
+CPP_COMMON = -MMD -std=c++20 -pedantic -Wall -Wextra -Wshadow -Wunused
 CPP_DEBUG = -g -fsanitize=undefined
-CPP_RELEASE = -DNDEBUG -Os -fdata-sections -ffunction-sections
+CPP_RELEASE = -DNDEBUG -Ofast
 
 
 debug: $(TARGET)

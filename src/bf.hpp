@@ -10,6 +10,7 @@ namespace bf {
 
 	using cell_t = unsigned char;
 	enum class OP : char {
+		DONE, // only used for compiler optimization
 		INC_PTR, // >
 		DEC_PTR, // <
 		INC_VAL, // +
@@ -49,24 +50,24 @@ namespace bf {
 		stack call_st;
 
 		for (char c : source) switch (c) {
-			case '>': program.emplace_back(OP::INC_PTR); break;
-			case '<': program.emplace_back(OP::DEC_PTR); break;
-			case '+': program.emplace_back(OP::INC_VAL); break;
-			case '-': program.emplace_back(OP::DEC_VAL); break;
-			case '.': program.emplace_back(OP::PUT_CHR); break;
-			case ',': program.emplace_back(OP::GET_CHR); break;
+			case '>': program.push_back({OP::INC_PTR, 0}); break;
+			case '<': program.push_back({OP::DEC_PTR, 0}); break;
+			case '+': program.push_back({OP::INC_VAL, 0}); break;
+			case '-': program.push_back({OP::DEC_VAL, 0}); break;
+			case '.': program.push_back({OP::PUT_CHR, 0}); break;
+			case ',': program.push_back({OP::GET_CHR, 0}); break;
 			case '[': {
 				if (call_st.full())
 					throw std::logic_error("Compile Error: Max stack size would be exceeded");
 				call_st.push(size(program));
-				program.emplace_back(OP::JMP_FWD);
+				program.push_back({OP::JMP_FWD, 0});
 			} break;
 			case ']': {
 				if (call_st.empty())
 					throw std::logic_error("Compile Error: Unmatched ']'");
 				size_t jmp = call_st.pop();
 				program[jmp].jmp = size(program);
-				program.emplace_back(OP::JMP_BCK, jmp);
+				program.push_back({OP::JMP_BCK, jmp});
 			} break;
 			default: break;
 		}
@@ -74,6 +75,7 @@ namespace bf {
 		if (!call_st.empty())
 			throw std::logic_error("Compile Error: Unmatched '['");
 
+		program.push_back({OP::DONE, 0});
 		return program;
 	}
 
@@ -82,7 +84,7 @@ namespace bf {
 	auto execute(const auto& program, FILE* in=stdin, FILE* out=stdout) {
 		std::array<cell_t, TAPE_SZ> tape{};
 
-		for (size_t ptr{}, pc{}, N{size(program)}; pc < N; ++pc) {
+		for (size_t ptr{}, pc{}; program[pc].op != OP::DONE; ++pc) {
 			switch (program[pc].op) {
 				case OP::INC_PTR: ++ptr; break;
 				case OP::DEC_PTR: --ptr; break;
@@ -92,9 +94,8 @@ namespace bf {
 				case OP::GET_CHR: tape[ptr] = cell_t(fgetc(in)); break;
 				case OP::JMP_FWD: if (!tape[ptr]) pc = program[pc].jmp; break;
 				case OP::JMP_BCK: if ( tape[ptr]) pc = program[pc].jmp; break;
-				[[unlikely]] default: assert(false);
+				default: break;
 			}
-
 			if (ptr >= TAPE_SZ)
 				throw std::runtime_error(ptr == TAPE_SZ ?
 					"Runtime Error: ptr fell off right end of tape" :
