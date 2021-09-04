@@ -1,4 +1,4 @@
-# cpp-brainf-interpreter
+# brainf-interpreter
 Yet another unoriginal brainf*** interpreter written in c++.  
 This project is similar to many already existing implementations of bf interpreters, so I won't explain the language entirely (learn more [here](https://en.wikipedia.org/wiki/Brainfuck)), however here are some key details:
 - The size of the array is 30000
